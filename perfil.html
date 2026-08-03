@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Área do Paciente</title>
+
+    <link rel="stylesheet" href="styles/styles.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🏥 Clínica de Fisioterapia</h1>
+
+    <h2>
+        Olá, <span id="nomePaciente"></span>!
+    </h2>
+
+    <p>Bem-vindo(a) à sua área do paciente.</p>
+
+    <hr>
+
+    <h3>📅 Meus Agendamentos</h3>
+
+    <div id="listaAgendamentos"></div>
+
+    <br>
+
+    <button onclick="compartilhar()">
+        📤 Compartilhar Agendamento
+    </button>
+
+    <br><br>
+
+    <button onclick="baixar()">
+        📥 Baixar Comprovante
+    </button>
+
+    <br><br>
+
+    <button onclick="cancelarTodos()">
+        🗑️ Cancelar Todos os Agendamentos
+    </button>
+
+    <br><br>
+
+    <a href="index.html">
+        <button>
+            ➕ Novo Agendamento
+        </button>
+    </a>
+
+</div>
+
+<script src="perfil.js"></script>
+
+</body>
+</html>
+

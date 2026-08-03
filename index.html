@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica de Fisioterapia</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏥 Clínica de Fisioterapia</h1>
+        <p>Cuidando da sua saúde e bem-estar.</p>
+        <p>Agende sua consulta</p>
+
+        <form id="formulario">
+
+            <input type="text" id="nome" placeholder="Nome completo" required>
+
+            <input type="email" id="email" placeholder="E-mail" required>
+
+            <input type="tel" id="telefone" placeholder="Telefone" required>
+
+            <!-- Trecho atualizado aqui -->
+            <label for="data">Data</label>
+            <input type="date" id="data" required>
+
+            <label for="horario">Horário</label>
+            <select id="horario" required>
+                <option value="">Selecione uma data primeiro</option>
+            </select>
+
+            <h3>Tipo de atendimento</h3>
+
+            <label>
+                <input type="radio" name="tipo" value="consultorio">
+                Consultório
+            </label>
+
+            <label>
+                <input type="radio" name="tipo" value="domiciliar">
+                Domiciliar
+            </label>
+
+            <div id="endereco">
+
+                <input type="text" id="cep" placeholder="CEP">
+
+                <input type="text" id="rua" placeholder="Rua">
+
+                <input type="text" id="numero" placeholder="Número">
+
+                <input type="text" id="bairro" placeholder="Bairro">
+
+                <input type="text" id="cidade" placeholder="Cidade">
+
+            </div>
+
+            <button type="submit">Agendar</button>
+
+        </form>
+
+    </div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
