@@ -78,3 +78,111 @@ button:hover{
     border-left:6px solid #6A5ACD;
 
 }
+
+.acoes-botoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-voltar, .btn-nova-conta {
+    flex: 1;
+    padding: 0px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-voltar {
+    background-color: #6c757d;
+    color: white;
+}
+
+.atendimento-container {
+    width: 100%;
+    margin-bottom: 20px; 
+}
+
+.atendimento-opcoes {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;    
+    gap: 15px;              
+}
+
+.radio-label {
+    display: flex;
+    align-items: center; 
+    cursor: pointer;
+    font-family: sans-serif;
+}
+
+.radio-label input[type="radio"] {
+    margin: 0;
+    margin-right: 10px;    
+    transform: scale(1.2); 
+}
+
+.radio-text {
+    color: #6C5CE7; 
+    font-weight: bold;
+    display: inline-block; 
+}
+
+/* Centralização do Tipo de Atendimento */
+.atendimento-container {
+    width: 100%;
+    text-align: center;
+    margin: 15px 0;
+}
+
+.atendimento-opcoes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.radio-text {
+    color: #6C5CE7;
+    font-weight: bold;
+}
+
+/* Botões do Rodapé */
+.acoes-botoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-voltar, .btn-nova-conta {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-voltar {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-nova-conta {
+    background-color: #28a745;
+    color: white;
+}

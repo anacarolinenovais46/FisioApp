@@ -21,30 +21,32 @@
 
             <input type="tel" id="telefone" placeholder="Telefone" required>
 
-            <!-- Trecho atualizado aqui -->
             <label for="data">Data</label>
-            <input type="date" id="data" required>
+            <input type="date" id="data" min="2026-01-01" required>
 
             <label for="horario">Horário</label>
             <select id="horario" required>
                 <option value="">Selecione uma data primeiro</option>
             </select>
 
-            <h3>Tipo de atendimento</h3>
+            <div class="atendimento-container">
+                <h3>Tipo de atendimento</h3>
+                <div class="atendimento-opcoes">
+                    <label class="radio-label">
+                        <input type="radio" name="tipo" value="consultorio" required>
+                        <span class="radio-text">Consultório</span>
+                    </label>
 
-            <label>
-                <input type="radio" name="tipo" value="consultorio">
-                Consultório
-            </label>
-
-            <label>
-                <input type="radio" name="tipo" value="domiciliar">
-                Domiciliar
-            </label>
+                    <label class="radio-label">
+                        <input type="radio" name="tipo" value="domiciliar" required>
+                        <span class="radio-text">Domiciliar</span>
+                    </label>
+                </div>
+            </div>
 
             <div id="endereco">
 
-                <input type="text" id="cep" placeholder="CEP">
+                <input type="text" id="cep" placeholder="CEP (somente números)">
 
                 <input type="text" id="rua" placeholder="Rua">
 
@@ -52,7 +54,13 @@
 
                 <input type="text" id="bairro" placeholder="Bairro">
 
-                <input type="text" id="cidade" placeholder="Cidade">
+                <label for="cidade">Cidade</label>
+                <select id="cidade">
+                    <option value="" disabled selected>Selecione a cidade</option>
+                    <option value="nova-odessa">Nova Odessa</option>
+                    <option value="americana">Americana</option>
+                    <option value="sumare">Sumaré</option>
+                </select>
 
             </div>
 

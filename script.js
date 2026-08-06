@@ -152,3 +152,68 @@ formulario.addEventListener("submit", function(event){
     window.location.href = "perfil.html";
 
 });
+
+// 1. Ocultar/Exibir Endereço dependendo da escolha
+const radiosTipo = document.querySelectorAll('input[name="tipo"]');
+const containerEndereco = document.getElementById('endereco');
+
+// Inicia oculto por padrão
+containerEndereco.style.display = 'none';
+
+radiosTipo.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        if (e.target.value === 'domiciliar') {
+            containerEndereco.style.display = 'block';
+        } else {
+            containerEndereco.style.display = 'none';
+        }
+    });
+});
+
+// 2. Preenchimento Automático do Endereço via CEP (ViaCEP)
+const cepInput = document.getElementById('cep');
+
+cepInput.addEventListener('blur', () => {
+    const cep = cepInput.value.replace(/\D/g, '');
+
+    if (cep.length === 8) {
+        document.getElementById('rua').placeholder = "Carregando...";
+        document.getElementById('bairro').placeholder = "Carregando...";
+
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(resposta => resposta.json())
+            .then(dados => {
+                if (!dados.erro) {
+                    document.getElementById('rua').value = dados.logradouro;
+                    document.getElementById('bairro').value = dados.bairro;
+
+                    const cidadeSelect = document.getElementById('cidade');
+                    const cidadeApi = dados.localidade.toLowerCase();
+
+                    if (cidadeApi.includes('nova odessa')) {
+                        cidadeSelect.value = 'nova-odessa';
+                    } else if (cidadeApi.includes('americana')) {
+                        cidadeSelect.value = 'americana';
+                    } else if (cidadeApi.includes('sumaré') || cidadeApi.includes('sumare')) {
+                        cidadeSelect.value = 'sumare';
+                    }
+
+                    document.getElementById('numero').focus();
+                } else {
+                    alert('CEP não encontrado!');
+                    limparEndereco();
+                }
+            })
+            .catch(() => {
+                alert('Erro ao buscar CEP.');
+                limparEndereco();
+            });
+    }
+});
+
+function limparEndereco() {
+    document.getElementById('rua').value = '';
+    document.getElementById('bairro').value = '';
+    document.getElementById('rua').placeholder = "Rua";
+    document.getElementById('bairro').placeholder = "Bairro";
+}
