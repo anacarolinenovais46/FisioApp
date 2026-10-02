@@ -1,219 +1,229 @@
-// Mostrar ou esconder o endereço
-const radios = document.querySelectorAll('input[name="tipo"]');
-const divEndereco = document.getElementById("endereco");
+document.addEventListener("DOMContentLoaded", () => {
+    // Lista de horários padrão da clínica
+    const horarios = [
+        "08:00", "09:00", "10:00", "11:00",
+        "14:00", "15:00", "16:00", "17:00"
+    ];
 
-radios.forEach(radio => {
+    const campoData = document.getElementById("data");
+    const selectHorario = document.getElementById("horario");
+    const radiosTipo = document.querySelectorAll('input[name="tipo"]');
+    const containerEndereco = document.getElementById("endereco");
+    const formulario = document.getElementById("formulario");
+    const cepInput = document.getElementById("cep");
 
-    radio.addEventListener("change", function(){
-
-        if(this.value === "domiciliar"){
-
-            divEndereco.style.display = "block";
-
-        }else{
-
-            divEndereco.style.display = "none";
-
-        }
-
-    });
-
-});
-
-// Horários disponíveis
-const horarios = [
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00"
-];
-
-const campoData = document.getElementById("data");
-const selectHorario = document.getElementById("horario");
-
-// Quando escolher uma data, mostra os horários
-campoData.addEventListener("change", carregarHorarios);
-
-function carregarHorarios(){
-
-    selectHorario.innerHTML = "";
-
-    const agendamentos =
-    JSON.parse(localStorage.getItem("agendamentos")) || [];
-
-    horarios.forEach(horario => {
-
-        const ocupado = agendamentos.some(consulta =>
-            consulta.data === campoData.value &&
-            consulta.horario === horario
-        );
-
-        const option = document.createElement("option");
-
-        option.value = horario;
-
-        if(ocupado){
-
-            option.textContent = horario + " ❌ Indisponível";
-            option.disabled = true;
-
-        }else{
-
-            option.textContent = horario + " ✅ Disponível";
-
-        }
-
-        selectHorario.appendChild(option);
-
-    });
-
-}
-
-// Formulário
-const formulario = document.getElementById("formulario");
-
-formulario.addEventListener("submit", function(event){
-
-    event.preventDefault();
-
-    const nome = document.getElementById("nome").value;
-    const email = document.getElementById("email").value;
-    const telefone = document.getElementById("telefone").value;
-    const data = document.getElementById("data").value;
-    const horario = document.getElementById("horario").value;
-
-    const tipoSelecionado = document.querySelector('input[name="tipo"]:checked');
-
-    if(!tipoSelecionado){
-
-        alert("Selecione o tipo de atendimento.");
-
-        return;
-
+    // 1. Mostrar/Esconder Endereço dependendo do Tipo de Atendimento
+    if (containerEndereco) {
+        containerEndereco.style.display = "none";
     }
 
-    const tipo = tipoSelecionado.value;
-
-    let endereco = "";
-
-    if(tipo === "domiciliar"){
-
-        endereco =
-            document.getElementById("rua").value +
-            ", Nº " +
-            document.getElementById("numero").value;
-
-    }
-
-    // Verifica se o horário foi ocupado enquanto o usuário preenchia
-    let agendamentos =
-    JSON.parse(localStorage.getItem("agendamentos")) || [];
-
-    const ocupado = agendamentos.some(consulta =>
-        consulta.data === data &&
-        consulta.horario === horario
-    );
-
-    if(ocupado){
-
-        alert("Este horário já foi agendado. Escolha outro.");
-
-        carregarHorarios();
-
-        return;
-
-    }
-
-    localStorage.setItem("nome", nome);
-
-    agendamentos.push({
-
-        nome,
-        email,
-        telefone,
-        data,
-        horario,
-        tipo,
-        endereco
-
+    radiosTipo.forEach(radio => {
+        radio.addEventListener("change", (e) => {
+            if (containerEndereco) {
+                containerEndereco.style.display = (e.target.value === "domiciliar") ? "block" : "none";
+            }
+        });
     });
 
-    localStorage.setItem(
-        "agendamentos",
-        JSON.stringify(agendamentos)
-    );
+    // 2. Carregar Horários Disponíveis e Indisponíveis por Data
+    function carregarHorarios() {
+        if (!selectHorario) return;
 
-    alert("Agendamento realizado com sucesso!");
+        selectHorario.innerHTML = "";
 
-    window.location.href = "perfil.html";
-
-});
-
-// 1. Ocultar/Exibir Endereço dependendo da escolha
-const radiosTipo = document.querySelectorAll('input[name="tipo"]');
-const containerEndereco = document.getElementById('endereco');
-
-// Inicia oculto por padrão
-containerEndereco.style.display = 'none';
-
-radiosTipo.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        if (e.target.value === 'domiciliar') {
-            containerEndereco.style.display = 'block';
-        } else {
-            containerEndereco.style.display = 'none';
+        if (!campoData || !campoData.value) {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Selecione uma data primeiro";
+            selectHorario.appendChild(option);
+            return;
         }
-    });
-});
 
-// 2. Preenchimento Automático do Endereço via CEP (ViaCEP)
-const cepInput = document.getElementById('cep');
+        // Busca o banco de dados global dos pacientes
+        const bd = JSON.parse(localStorage.getItem("bd_pacientes")) || {};
 
-cepInput.addEventListener('blur', () => {
-    const cep = cepInput.value.replace(/\D/g, '');
-
-    if (cep.length === 8) {
-        document.getElementById('rua').placeholder = "Carregando...";
-        document.getElementById('bairro').placeholder = "Carregando...";
-
-        fetch(`https://viacep.com.br/ws/${cep}/json/`)
-            .then(resposta => resposta.json())
-            .then(dados => {
-                if (!dados.erro) {
-                    document.getElementById('rua').value = dados.logradouro;
-                    document.getElementById('bairro').value = dados.bairro;
-
-                    const cidadeSelect = document.getElementById('cidade');
-                    const cidadeApi = dados.localidade.toLowerCase();
-
-                    if (cidadeApi.includes('nova odessa')) {
-                        cidadeSelect.value = 'nova-odessa';
-                    } else if (cidadeApi.includes('americana')) {
-                        cidadeSelect.value = 'americana';
-                    } else if (cidadeApi.includes('sumaré') || cidadeApi.includes('sumare')) {
-                        cidadeSelect.value = 'sumare';
+        // Extrai todos os agendamentos já realizados na data selecionada
+        const agendamentosNaData = [];
+        Object.values(bd).forEach(paciente => {
+            if (paciente.agendamentos) {
+                paciente.agendamentos.forEach(ag => {
+                    if (ag.data === campoData.value) {
+                        agendamentosNaData.push(ag.horario);
                     }
+                });
+            }
+        });
 
-                    document.getElementById('numero').focus();
-                } else {
-                    alert('CEP não encontrado!');
-                    limparEndereco();
+        // Preenche o select com status
+        horarios.forEach(horario => {
+            const ocupado = agendamentosNaData.includes(horario);
+            const option = document.createElement("option");
+
+            option.value = horario;
+
+            if (ocupado) {
+                option.textContent = `${horario} ❌ Indisponível`;
+                option.disabled = true;
+            } else {
+                option.textContent = `${horario} ✅ Disponível`;
+            }
+
+            selectHorario.appendChild(option);
+        });
+    }
+
+    if (campoData) {
+        campoData.addEventListener("change", carregarHorarios);
+    }
+
+    // 3. Preenchimento Automático do Endereço via CEP (ViaCEP)
+    if (cepInput) {
+        cepInput.addEventListener("blur", () => {
+            const cep = cepInput.value.replace(/\D/g, "");
+
+            if (cep.length === 8) {
+                const elRua = document.getElementById("rua");
+                const elBairro = document.getElementById("bairro");
+
+                if (elRua) elRua.placeholder = "Carregando...";
+                if (elBairro) elBairro.placeholder = "Carregando...";
+
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(resposta => resposta.json())
+                    .then(dados => {
+                        if (!dados.erro) {
+                            if (elRua) elRua.value = dados.logradouro;
+                            if (elBairro) elBairro.value = dados.bairro;
+
+                            const cidadeSelect = document.getElementById("cidade");
+                            if (cidadeSelect && dados.localidade) {
+                                const cidadeApi = dados.localidade.toLowerCase();
+                                if (cidadeApi.includes("nova odessa")) {
+                                    cidadeSelect.value = "nova-odessa";
+                                } else if (cidadeApi.includes("americana")) {
+                                    cidadeSelect.value = "americana";
+                                } else if (cidadeApi.includes("sumaré") || cidadeApi.includes("sumare")) {
+                                    cidadeSelect.value = "sumare";
+                                }
+                            }
+
+                            const elNumero = document.getElementById("numero");
+                            if (elNumero) elNumero.focus();
+                        } else {
+                            alert("CEP não encontrado!");
+                            limparEndereco();
+                        }
+                    })
+                    .catch(() => {
+                        alert("Erro ao buscar CEP.");
+                        limparEndereco();
+                    });
+            }
+        });
+    }
+
+    function limparEndereco() {
+        const elRua = document.getElementById("rua");
+        const elBairro = document.getElementById("bairro");
+        if (elRua) {
+            elRua.value = "";
+            elRua.placeholder = "Rua";
+        }
+        if (elBairro) {
+            elBairro.value = "";
+            elBairro.placeholder = "Bairro";
+        }
+    }
+
+    // 4. Processamento do Formulário e Salvamento do Agendamento
+    if (formulario) {
+        formulario.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const nome = document.getElementById("nome").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const telefone = document.getElementById("telefone").value.trim();
+            const data = document.getElementById("data").value;
+            const horario = selectHorario ? selectHorario.value : "";
+
+            const tipoSelecionado = document.querySelector('input[name="tipo"]:checked');
+
+            if (!tipoSelecionado) {
+                alert("Selecione o tipo de atendimento.");
+                return;
+            }
+
+            if (!horario) {
+                alert("Por favor, selecione um horário válido.");
+                return;
+            }
+
+            const tipo = tipoSelecionado.value;
+            let enderecoCompleto = "";
+
+            if (tipo === "domiciliar") {
+                const rua = document.getElementById("rua").value.trim();
+                const numero = document.getElementById("numero").value.trim();
+                const bairro = document.getElementById("bairro").value.trim();
+                const cidadeSelect = document.getElementById("cidade");
+                const cidade = cidadeSelect ? cidadeSelect.value : "";
+
+                enderecoCompleto = `${rua}, Nº ${numero} - ${bairro} (${cidade})`;
+            }
+
+            // Gerar ID único limpo baseado no e-mail do paciente
+            const idPaciente = email.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            // Buscar banco de dados
+            let bd = JSON.parse(localStorage.getItem("bd_pacientes")) || {};
+
+            // Trava de segurança: verifica novamente se o horário foi ocupado por outro paciente
+            let ocupado = false;
+            Object.values(bd).forEach(p => {
+                if (p.agendamentos) {
+                    p.agendamentos.forEach(ag => {
+                        if (ag.data === data && ag.horario === horario) {
+                            ocupado = true;
+                        }
+                    });
                 }
-            })
-            .catch(() => {
-                alert('Erro ao buscar CEP.');
-                limparEndereco();
             });
+
+            if (ocupado) {
+                alert("Este horário já foi agendado! Por favor, escolha outro.");
+                carregarHorarios();
+                return;
+            }
+
+            // Cria o cadastro do paciente caso seja novo
+            if (!bd[idPaciente]) {
+                bd[idPaciente] = {
+                    nome: nome,
+                    email: email,
+                    telefone: telefone,
+                    agendamentos: []
+                };
+            } else {
+                bd[idPaciente].nome = nome;
+                bd[idPaciente].email = email;
+                bd[idPaciente].telefone = telefone;
+            }
+
+            // Adiciona o novo agendamento à lista do paciente
+            bd[idPaciente].agendamentos.push({
+                data: data,
+                horario: horario,
+                tipo: tipo,
+                endereco: enderecoCompleto
+            });
+
+            // Salva no banco de dados centralizado
+            localStorage.setItem("bd_pacientes", JSON.stringify(bd));
+
+            alert("Agendamento realizado com sucesso!");
+
+            // Redireciona para o perfil único do paciente
+            window.location.href = `perfil.html?id=${idPaciente}`;
+        });
     }
 });
-
-function limparEndereco() {
-    document.getElementById('rua').value = '';
-    document.getElementById('bairro').value = '';
-    document.getElementById('rua').placeholder = "Rua";
-    document.getElementById('bairro').placeholder = "Bairro";
-}

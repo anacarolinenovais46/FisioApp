@@ -1,185 +1,125 @@
-// Nome do paciente
-const nome = localStorage.getItem("nome");
-document.getElementById("nomePaciente").innerHTML = nome;
+document.addEventListener("DOMContentLoaded", () => {
+    // ⚙️ CONFIGURAÇÃO: Mesmo número do WhatsApp da clínica configurado no script.js
+    const NUMERO_WHATSAPP_CLINICA = "5519999999999";
 
-// Lista de agendamentos
-let lista = JSON.parse(localStorage.getItem("agendamentos")) || [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const idPaciente = urlParams.get('id');
 
-const div = document.getElementById("listaAgendamentos");
+    let bd = JSON.parse(localStorage.getItem("bd_pacientes")) || {};
+    let paciente = bd[idPaciente];
 
-// Carregar agendamentos
-function carregarAgendamentos(){
-
-    div.innerHTML = "";
-
-    if(lista.length === 0){
-
-        div.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
-        return;
-
-    }
-
-    lista.forEach(function(consulta, indice){
-
-        div.innerHTML += `
-
-        <div class="card">
-
-            <h3>Agendamento ${indice + 1}</h3>
-
-            <p><b>📅 Data:</b> ${consulta.data}</p>
-
-            <p><b>⏰ Horário:</b> ${consulta.horario}</p>
-
-            <p><b>🏥 Tipo:</b> ${consulta.tipo}</p>
-
-            ${
-                consulta.tipo === "domiciliar"
-                ? `<p><b>📍 Endereço:</b> ${consulta.endereco}</p>`
-                : ""
-            }
-
-            <button onclick="cancelar(${indice})">
-                ❌ Cancelar Agendamento
-            </button>
-
-            <hr>
-
-        </div>
-
+    if (!idPaciente || !paciente) {
+        document.body.innerHTML = `
+            <div style="text-align: center; padding: 50px; font-family: sans-serif;">
+                <h1>⚠️ Paciente não encontrado!</h1>
+                <p>Por favor, realize um novo agendamento primeiro.</p>
+                <br>
+                <a href="index.html" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Voltar ao Início</a>
+            </div>
         `;
-
-    });
-
-}
-
-carregarAgendamentos();
-
-// Cancelar agendamento
-function cancelar(indice){
-
-    if(confirm("Deseja cancelar este agendamento?")){
-
-        lista.splice(indice,1);
-
-        localStorage.setItem(
-            "agendamentos",
-            JSON.stringify(lista)
-        );
-
-        carregarAgendamentos();
-
-        alert("Agendamento cancelado com sucesso!");
-
-    }
-
-}
-
-// Compartilhar último agendamento
-function compartilhar(){
-
-    if(lista.length === 0){
-
-        alert("Não há agendamentos para compartilhar.");
         return;
-
     }
 
-    const ultimo = lista[lista.length - 1];
+    const elNome = document.getElementById("nomePaciente");
+    if (elNome) elNome.textContent = paciente.nome;
 
-    const texto = `COMPROVANTE DE AGENDAMENTO
+    function carregarAgendamentos() {
+        const div = document.getElementById("listaAgendamentos");
+        if (!div) return;
+        
+        div.innerHTML = "";
 
-Paciente: ${nome}
+        if (!paciente.agendamentos || paciente.agendamentos.length === 0) {
+            div.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
+            return;
+        }
 
-Data: ${ultimo.data}
-
-Horário: ${ultimo.horario}
-
-Tipo: ${ultimo.tipo}
-
-Endereço: ${ultimo.endereco || "Consultório"}
-
-Clínica de Fisioterapia`;
-
-    if(navigator.share){
-
-        navigator.share({
-
-            title: "Agendamento",
-
-            text: texto
-
+        paciente.agendamentos.forEach((consulta, indice) => {
+            const dataFmt = consulta.data ? consulta.data.split("-").reverse().join("/") : consulta.data;
+            div.innerHTML += `
+                <div class="card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                    <h3>Agendamento ${indice + 1}</h3>
+                    <p><b>📅 Data:</b> ${dataFmt}</p>
+                    <p><b>⏰ Horário:</b> ${consulta.horario}</p>
+                    <p><b>🏥 Tipo:</b> ${consulta.tipo === 'domiciliar' ? 'Domiciliar' : 'Consultório'}</p>
+                    ${consulta.tipo === "domiciliar" ? `<p><b>📍 Endereço:</b> ${consulta.endereco}</p>` : ""}
+                    <br>
+                    <button type="button" onclick="cancelar(${indice})">❌ Cancelar Agendamento</button>
+                </div>
+            `;
         });
-
-    }else{
-
-        alert("Seu navegador não suporta compartilhamento.");
-
     }
 
-}
-
-// Baixar comprovante
-function baixar(){
-
-    if(lista.length === 0){
-
-        alert("Não há agendamentos para baixar.");
-        return;
-
+    function salvar() {
+        localStorage.setItem("bd_pacientes", JSON.stringify(bd));
     }
 
-    const ultimo = lista[lista.length - 1];
+    // 💬 Botão de Lembrete / Confirmação via WhatsApp
+    window.confirmarWhatsApp = function () {
+        if (!paciente.agendamentos || paciente.agendamentos.length === 0) {
+            alert("Não há agendamentos para confirmar.");
+            return;
+        }
 
-    const texto = `COMPROVANTE DE AGENDAMENTO
+        const ultimo = paciente.agendamentos[paciente.agendamentos.length - 1];
+        const dataFmt = ultimo.data ? ultimo.data.split("-").reverse().join("/") : ultimo.data;
+        const tipoTexto = ultimo.tipo === "domiciliar" ? "Domiciliar" : "Consultório";
 
-Paciente: ${nome}
+        let texto = `Olá! Gostaria de confirmar meu agendamento de Fisioterapia:%0A%0A`;
+        texto += `👤 *Paciente:* ${paciente.nome}%0A`;
+        texto += `📅 *Data:* ${dataFmt}%0A`;
+        texto += `⏰ *Horário:* ${ultimo.horario}%0A`;
+        texto += `🏥 *Tipo:* ${tipoTexto}%0A`;
 
-Data: ${ultimo.data}
+        if (ultimo.tipo === "domiciliar" && ultimo.endereco) {
+            texto += `📍 *Endereço:* ${ultimo.endereco}%0A`;
+        }
 
-Horário: ${ultimo.horario}
+        window.open(`https://wa.me/${NUMERO_WHATSAPP_CLINICA}?text=${texto}`, "_blank");
+    };
 
-Tipo: ${ultimo.tipo}
+    window.cancelar = function (indice) {
+        if (confirm("Deseja cancelar este agendamento?")) {
+            paciente.agendamentos.splice(indice, 1);
+            salvar();
+            carregarAgendamentos();
+        }
+    };
 
-Endereço: ${ultimo.endereco || "Consultório"}
+    window.cancelarTodos = function () {
+        if (!paciente.agendamentos || paciente.agendamentos.length === 0) return alert("Não há agendamentos.");
+        if (confirm("Deseja cancelar TODOS os agendamentos?")) {
+            paciente.agendamentos = [];
+            salvar();
+            carregarAgendamentos();
+        }
+    };
 
-Clínica de Fisioterapia`;
+    window.compartilhar = function () {
+        if (!paciente.agendamentos || paciente.agendamentos.length === 0) return alert("Não há agendamentos.");
+        const ultimo = paciente.agendamentos[paciente.agendamentos.length - 1];
+        const dataFmt = ultimo.data ? ultimo.data.split("-").reverse().join("/") : ultimo.data;
+        const texto = `AGENDAMENTO FISIOTERAPIA\nPaciente: ${paciente.nome}\nData: ${dataFmt} às ${ultimo.horario}`;
 
-    const arquivo = new Blob([texto], {type:"text/plain"});
+        if (navigator.share) {
+            navigator.share({ title: "Agendamento", text: texto }).catch(() => {});
+        } else {
+            alert(texto);
+        }
+    };
 
-    const link = document.createElement("a");
+    window.baixar = function () {
+        if (!paciente.agendamentos || paciente.agendamentos.length === 0) return alert("Não há agendamentos.");
+        const ultimo = paciente.agendamentos[paciente.agendamentos.length - 1];
+        const dataFmt = ultimo.data ? ultimo.data.split("-").reverse().join("/") : ultimo.data;
+        const texto = `COMPROVANTE DE AGENDAMENTO\n\nPaciente: ${paciente.nome}\nData: ${dataFmt}\nHorário: ${ultimo.horario}\nTipo: ${ultimo.tipo}\nEndereço: ${ultimo.endereco || "Consultório"}`;
 
-    link.href = URL.createObjectURL(arquivo);
+        const blob = new Blob([texto], { type: "text/plain;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Comprovante_${paciente.nome.replace(/\s+/g, '_')}.txt`;
+        link.click();
+    };
 
-    link.download = "Comprovante.txt";
-
-    link.click();
-
-}
-
-function cancelarTodos(){
-
-    if(lista.length === 0){
-
-        alert("Não há agendamentos.");
-
-        return;
-
-    }
-
-    if(confirm("Deseja cancelar TODOS os agendamentos?")){
-
-        lista = [];
-
-        localStorage.setItem(
-            "agendamentos",
-            JSON.stringify(lista)
-        );
-
-        carregarAgendamentos();
-
-        alert("Todos os agendamentos foram cancelados!");
-
-    }
-
-}
+    carregarAgendamentos();
+});
